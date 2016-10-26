@@ -229,9 +229,9 @@ RSpec.describe Guide, "#live_edition" do
 
   it "returns the most recently published edition since unpublication" do
     guide = create(:guide, created_at: 5.days.ago)
-    guide.editions << build(:edition, :published, created_at: 4.days.ago)
-    guide.editions << build(:edition, :unpublished, created_at: 3.days.ago)
-    latest_published_edition = build(:edition, :published, created_at: 2.days.ago)
+    guide.editions << build(:edition, :published, created_at: 4.days.ago, version: 1)
+    guide.editions << build(:edition, :unpublished, created_at: 3.days.ago, version: 1)
+    latest_published_edition = build(:edition, :published, created_at: 2.days.ago, version: 2)
     guide.editions << latest_published_edition
 
     expect(guide.live_edition).to eq(latest_published_edition)

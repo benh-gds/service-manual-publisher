@@ -43,7 +43,7 @@ RSpec.describe Edition, type: :model do
 
   describe "#previously_published_edition" do
     let :editions do
-      1.upto(4).map { build(:edition, :published) }
+      1.upto(4).map { |i| build(:edition, :published, version: i) }
     end
 
     before do
@@ -71,6 +71,16 @@ RSpec.describe Edition, type: :model do
       edition = build(:edition, version: nil)
       expect(edition).to be_invalid
       expect(edition.errors.full_messages_for(:version).size).to eq 1
+    end
+
+    it "does not allow multiple published editions with the same version number" do
+      create(:guide, :with_published_edition)
+
+      guide = create(:guide, :with_published_edition)
+      edition = Edition.new(guide: guide, version: 1, state: 'published')
+
+      expect(edition).to be_invalid
+      expect(edition.errors.get(:version)).to include('has already been published')
     end
 
     describe "state" do

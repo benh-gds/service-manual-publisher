@@ -30,12 +30,11 @@ RSpec.describe GuidesController, type: :controller do
     describe "#publish" do
       it "sends an email notification when published by another user" do
         allow_any_instance_of(GdsApi::Rummager).to receive(:add_document)
-        edition = build(:edition, state: 'published')
-        create(:guide, slug: "/service-manual/topic-name/test", editions: [edition])
+        guide = create(:guide, :with_ready_edition, slug: "/service-manual/topic-name/test")
         publisher = build(:user, email: "ms.publisher@example.com")
         allow_any_instance_of(Edition).to receive(:notification_subscribers).and_return([publisher])
 
-        put :update, id: edition.guide_id, publish: true
+        put :update, id: guide.id, publish: true
 
         expect(ActionMailer::Base.deliveries.size).to eq 1
         expect(ActionMailer::Base.deliveries.last.to).to eq ["ms.publisher@example.com"]
@@ -44,11 +43,10 @@ RSpec.describe GuidesController, type: :controller do
 
       it "avoids email notification when published by the author" do
         allow_any_instance_of(GdsApi::Rummager).to receive(:add_document)
-        edition = build(:edition, state: 'published')
-        create(:guide, slug: "/service-manual/topic-name/test", editions: [edition])
+        guide = create(:guide, :with_ready_edition, slug: "/service-manual/topic-name/test")
         allow_any_instance_of(Edition).to receive(:notification_subscribers).and_return([content_designer])
 
-        put :update, id: edition.guide_id, publish: true
+        put :update, id: guide.id, publish: true
 
         expect(ActionMailer::Base.deliveries.size).to eq 0
       end

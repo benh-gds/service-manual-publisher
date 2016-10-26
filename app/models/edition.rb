@@ -28,6 +28,7 @@ class Edition < ActiveRecord::Base
   validates :change_note, presence: true, if: :major?
   validates :version, presence: true
   validates :created_by, presence: true
+  validate :can_only_be_published_once_per_version
 
   auto_strip_attributes(
     :title,
@@ -71,5 +72,18 @@ private
 
   def first_version?
     (version || 1) == 1
+  end
+
+  def can_only_be_published_once_per_version
+    return unless state == 'published'
+
+    scope = self.class.published
+    scope = scope.where(guide_id: guide_id)
+    scope = scope.where(version: version)
+    scope = scope.where.not(id: id)
+
+    if scope.any?
+      errors.add(:version, 'has already been published')
+    end
   end
 end
